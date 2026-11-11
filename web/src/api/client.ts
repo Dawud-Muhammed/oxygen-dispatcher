@@ -38,10 +38,11 @@ async function request<T>(
   path: string,
   body: unknown | undefined,
   signal?: AbortSignal,
+  { authenticated = true } = {},
 ): Promise<T> {
   let response: Response;
   try {
-    const token = getToken();
+    const token = authenticated ? getToken() : null;
     response = await fetch(BASE + path, {
       method: body === undefined ? "GET" : "POST",
       headers: {
@@ -105,6 +106,36 @@ export type RunListRecord = Pick<
 export interface Explanation {
   source: "ai" | "template";
   reason?: string;
+}
+
+export type ReplayHelpAction = "explain" | "ask" | "handover";
+export type ReplayHelpView = "valve" | "spo2";
+
+export interface ReplayHelpRequest {
+  subject_id: string;
+  view: ReplayHelpView;
+  action: ReplayHelpAction;
+  start_s: number;
+  end_s: number;
+  event_id?: string;
+  question?: string;
+  history?: string[];
+}
+
+export interface ReplayHelpResponse {
+  text: string;
+  source: "ai" | "template";
+  reason: string | null;
+  evidence: { id: string; timeS: number; label: string; detail: string }[];
+}
+
+export function askAboutReplay(
+  payload: ReplayHelpRequest,
+  signal: AbortSignal,
+) {
+  return request<ReplayHelpResponse>("/ai/replay", payload, signal, {
+    authenticated: false,
+  });
 }
 export function saveRun(payload: ExperimentRecord, signal?: AbortSignal) {
   return request<RunRecord>("/runs", payload, signal);

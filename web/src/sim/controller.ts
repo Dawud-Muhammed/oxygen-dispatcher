@@ -8,6 +8,12 @@ export type ControllerMode =
   | "sensor_fallback"
   | "no_breath_fallback"
   | "critical_fallback";
+const nonPulseReason: Record<Exclude<ControllerMode, "breath_sync">, string> = {
+  warming_up: "The controller is finding a pressure reference.",
+  sensor_fallback: "The controller is using its configured backup mode.",
+  no_breath_fallback: "No breath was detected within the configured interval.",
+  critical_fallback: "The controller detected a sustained low SpO₂ reading.",
+};
 export interface Alarm {
   id: string;
   code: string;
@@ -27,6 +33,7 @@ export interface EventLogEntry {
 }
 export interface ControllerOutput {
   valveOpen: boolean;
+  valveReason: string;
   flowSetpoint: number;
   mode: ControllerMode;
   breathDetected: boolean;
@@ -198,6 +205,7 @@ export class SpO2Window {
 }
 export class ValveController {
   readonly config: Required<ControllerConfig>;
+  private readonly pressureOnly: boolean;
   private flow: number;
   private mode: ControllerMode = "warming_up";
   private pulse: "waiting_exhale" | "ready" | "open" = "waiting_exhale";
@@ -226,8 +234,9 @@ export class ValveController {
   private activeSeconds = 0;
   droppedEvents = 0;
   droppedAlarms = 0;
-  constructor(config: ControllerConfig) {
+  constructor(config: ControllerConfig, pressureOnly = false) {
     this.config = validateControllerConfig(config);
+    this.pressureOnly = pressureOnly;
     this.flow = this.config.initialFlow;
   }
   private event(timeS: number, code: string, message: string) {
@@ -320,7 +329,7 @@ export class ValveController {
       c.maxSensorAgeS,
       meta.spo2Quality,
     );
-    const valid = pv === "valid" && sv === "valid";
+    const valid = pv === "valid" && (this.pressureOnly || sv === "valid");
     // Commands at timeS use only intervals already completed. The current
     // sample can reset a continuous-condition timer immediately, but cannot
     // credit the forthcoming interval before it has elapsed.
@@ -329,7 +338,8 @@ export class ValveController {
     if (!valid) this.sensorRecoveryPending = true;
     else if (this.healthyS >= c.recoveryS - 1e-9)
       this.sensorRecoveryPending = false;
-    const critical = sv === "valid" && spo2! < c.criticalThreshold;
+    const critical =
+      !this.pressureOnly && sv === "valid" && spo2! < c.criticalThreshold;
     if (!critical) this.criticalS = 0;
     this.window.expire(timeS, c.averageWindowS);
     let detected = false;
@@ -379,7 +389,7 @@ export class ValveController {
       );
       this.mode = next;
     }
-    if (next === "breath_sync" && valid) {
+    if (!this.pressureOnly && next === "breath_sync" && valid) {
       if (this.adjustmentS >= c.adjustmentIntervalS - 1e-9) {
         this.adjustmentS = 0;
         const avg = this.window.summarize(timeS, c.averageWindowS);
@@ -431,23 +441,40 @@ export class ValveController {
       dt,
     );
     if (this.history.some((a) => a.active)) this.activeSeconds += dt;
-    const flow =
-      next === "critical_fallback"
-        ? c.prescribedMaxFlow
-        : next === "sensor_fallback" || next === "no_breath_fallback"
-          ? c.fallbackFlow
-          : this.flow;
+    let flow = this.flow;
+    if (!this.pressureOnly) {
+      if (next === "critical_fallback") flow = c.prescribedMaxFlow;
+      else if (next === "sensor_fallback" || next === "no_breath_fallback")
+        flow = c.fallbackFlow;
+    }
     const valveOpen = next !== "breath_sync" || this.pulse === "open";
+    let valveReason: string;
+    if (next !== "breath_sync") valveReason = nonPulseReason[next];
+    else if (detected)
+      valveReason = `${c.inhaleDebounceTicks} consecutive pressure readings crossed the breath threshold.`;
+    else if (valveOpen) valveReason = "The timed valve opening is in progress.";
+    else if (this.pulse === "waiting_exhale")
+      valveReason =
+        "The timed opening ended. The controller is waiting for pressure to rise.";
+    else if (this.debounce > 0)
+      valveReason =
+        "The pressure dropped. The controller is waiting for another reading.";
+    else
+      valveReason =
+        "Pressure is above the breath threshold. The controller is ready for the next breath.";
     if (this.pulse === "open") this.openS += dt;
     if (valid) this.healthyS += dt;
     else this.invalidS += dt;
     if (critical) this.criticalS += dt;
-    if (next === "breath_sync" && valid) this.adjustmentS += dt;
+    if (!this.pressureOnly && next === "breath_sync" && valid)
+      this.adjustmentS += dt;
     this.sinceBreathS += dt;
-    this.window.add(timeS, dt, sv === "valid" ? spo2 : null);
+    if (!this.pressureOnly)
+      this.window.add(timeS, dt, sv === "valid" ? spo2 : null);
     this.elapsedS += dt;
     return {
       valveOpen,
+      valveReason,
       flowSetpoint: flow,
       mode: next,
       breathDetected: detected,

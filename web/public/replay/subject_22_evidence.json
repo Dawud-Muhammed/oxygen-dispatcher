@@ -1,0 +1,13 @@
+{
+  "subjectId": "22",
+  "durationS": 480,
+  "events": [
+    {
+      "id": "spo2-rise-57",
+      "kind": "spo2-rise",
+      "timeS": 57,
+      "label": "SpO₂ rose · Review trend",
+      "detail": "The last six readings were higher than the earlier 91% median. Latest reading: 93%. Review the trend and current oxygen plan."
+    }
+  ]
+}

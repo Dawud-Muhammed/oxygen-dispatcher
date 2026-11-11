@@ -354,6 +354,7 @@ export class ReplayRunner {
   private cycle = 1;
   private boundary = false;
   private looping: boolean;
+  private reviewOnly: boolean;
   private sampleIndex = 0;
   private lastSnapshot: ReplaySnapshot | null = null;
   private summaries: ReplaySummary[] = [];
@@ -366,13 +367,14 @@ export class ReplayRunner {
   constructor(
     subjects: SubjectJson[],
     ctrlCfg: ControllerConfig,
-    options: { loop?: boolean } = {},
+    options: { loop?: boolean; reviewOnly?: boolean } = {},
   ) {
     if (!subjects.length) throw new Error("No recordings are available.");
     this.subjects = subjects.map(normalizeSubject);
     this.ctrlCfg = structuredClone(ctrlCfg);
     this.looping = options.loop ?? false;
-    this.ctrl = new ValveController(this.ctrlCfg);
+    this.reviewOnly = options.reviewOnly ?? false;
+    this.ctrl = new ValveController(this.ctrlCfg, this.reviewOnly);
     this.matcher = new EventMatcher(
       this.subjects[0].breathTimesS,
       this.subjects[0].durationS,
@@ -401,7 +403,7 @@ export class ReplayRunner {
     this.tickIndex = 0;
     this.sampleIndex = 0;
     this.boundary = false;
-    this.ctrl = new ValveController(this.ctrlCfg);
+    this.ctrl = new ValveController(this.ctrlCfg, this.reviewOnly);
     this.matcher = new EventMatcher(
       this.subjects[this.index].breathTimesS,
       this.subjects[this.index].durationS,

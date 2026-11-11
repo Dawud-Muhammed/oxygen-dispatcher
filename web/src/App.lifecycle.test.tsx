@@ -7,7 +7,7 @@ import {
   screen,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import App from "./App";
+import App from "./ResearchWorkspace";
 import { ExperimentEngine, DEFAULT_EXPERIMENT_CONFIG } from "./sim/engine";
 import { readLibrary, saveLocal } from "./library";
 import type { LocalRun } from "./library";

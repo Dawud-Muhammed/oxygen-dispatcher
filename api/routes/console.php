@@ -15,6 +15,6 @@ Artisan::command('research:token {email} {--name=Researcher} {--revoke : Revoke 
     if ($this->option('revoke')) {
         $user->tokens()->delete();
     }
-    $this->warn('Keep this personal access token private. It expires in 30 days; paste it into Saved runs.');
+    $this->warn('Keep this research token private. It expires in 30 days. Paste it into Saved runs in the research workspace.');
     $this->line($user->createToken('research-browser', ['research'], now()->addDays(30))->plainTextToken);
 })->purpose('Provision an owner-scoped research account token from a trusted local terminal');

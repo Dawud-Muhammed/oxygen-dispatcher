@@ -1,0 +1,69 @@
+{
+  "subjectId": "46",
+  "durationS": 480,
+  "events": [
+    {
+      "id": "spo2-rise-101",
+      "kind": "spo2-rise",
+      "timeS": 101,
+      "label": "SpO₂ rose · Review trend",
+      "detail": "The last six readings were higher than the earlier 94% median. Latest reading: 96%. Review the trend and current oxygen plan."
+    },
+    {
+      "id": "spo2-rise-134",
+      "kind": "spo2-rise",
+      "timeS": 134,
+      "label": "SpO₂ rose · Review trend",
+      "detail": "The last six readings were higher than the earlier 95% median. Latest reading: 98%. Review the trend and current oxygen plan."
+    },
+    {
+      "id": "spo2-rise-261",
+      "kind": "spo2-rise",
+      "timeS": 261,
+      "label": "SpO₂ rose · Review trend",
+      "detail": "The last six readings were higher than the earlier 95% median. Latest reading: 97%. Review the trend and current oxygen plan."
+    },
+    {
+      "id": "spo2-fall-281",
+      "kind": "spo2-fall",
+      "timeS": 281,
+      "label": "SpO₂ fell · Review trend",
+      "detail": "The last six readings were lower than the earlier 95% median. Latest reading: 91%. Review the trend and current oxygen plan."
+    },
+    {
+      "id": "spo2-rise-296",
+      "kind": "spo2-rise",
+      "timeS": 296,
+      "label": "SpO₂ rose · Review trend",
+      "detail": "The last six readings were higher than the earlier 95% median. Latest reading: 98%. Review the trend and current oxygen plan."
+    },
+    {
+      "id": "spo2-fall-334",
+      "kind": "spo2-fall",
+      "timeS": 334,
+      "label": "SpO₂ fell · Review trend",
+      "detail": "The last six readings were lower than the earlier 96% median. Latest reading: 93%. Review the trend and current oxygen plan."
+    },
+    {
+      "id": "spo2-fall-378",
+      "kind": "spo2-fall",
+      "timeS": 378,
+      "label": "SpO₂ fell · Review trend",
+      "detail": "The last six readings were lower than the earlier 97% median. Latest reading: 94%. Review the trend and current oxygen plan."
+    },
+    {
+      "id": "spo2-fall-412",
+      "kind": "spo2-fall",
+      "timeS": 412,
+      "label": "SpO₂ fell · Review trend",
+      "detail": "The last six readings were lower than the earlier 96.5% median. Latest reading: 94%. Review the trend and current oxygen plan."
+    },
+    {
+      "id": "spo2-rise-479",
+      "kind": "spo2-rise",
+      "timeS": 479,
+      "label": "SpO₂ rose · Review trend",
+      "detail": "The last six readings were higher than the earlier 95% median. Latest reading: 97%. Review the trend and current oxygen plan."
+    }
+  ]
+}

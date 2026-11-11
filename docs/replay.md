@@ -1,17 +1,51 @@
 # Recorded-data replay
 
+The public dashboard has two recorded views. **Valve Replay** uses the Subject 04
+chest impedance waveform to estimate breathing phases and drive the virtual valve.
+**SpO₂ Review** uses
+Subjects 22, 46 and 01 for recorded rises, falls and gaps. The review rules
+create on-screen notices only. They do not change the manual demo flow setting
+or the recording.
+
 Replay is an open-loop integration exercise using the BIDMC PPG and Respiration
 Dataset (https://physionet.org/content/bidmc/1.0.0/). Recorded SpO₂ cannot respond
 to the software controller, and replay does not calculate treatment benefit or
-oxygen savings. Pressure is an explicitly synthetic fixture generated from the
-same annotations used for scoring. These scores are not independent detection
-validation.
+oxygen savings. The separate research workspace tests its pressure controller
+with pressure generated from the breath annotations.
 
 ## Conversion and provenance
 
 Run `node web/scripts/convert-bidmc.mjs` from the repository root. The converter
 discovers numeric CSV recordings in `data/bidmc`, uses their explicit `Time [s]`
 column, and writes the active manifest to `web/public/replay/index.json`.
+Then run `node web/scripts/build-replay-evidence.mjs` to regenerate the evidence
+used by the browser and the API. The Subject 04 builder uses the `RESP` column of
+[`bidmc_04_Signals.csv`](https://physionet.org/files/bidmc/1.0.0/bidmc_csv/bidmc_04_Signals.csv),
+which contains 60,001 samples from 0 to 480 seconds at 125 Hz. The output records
+the source hash, which matches the [PhysioNet checksum list](https://physionet.org/files/bidmc/1.0.0/SHA256SUMS.txt).
+Every fifth recorded value is plotted at 25 Hz. The dataset is credited to
+Pimentel, Johnson, Charlton and Clifton under the
+[Open Data Commons Attribution License v1.0](https://physionet.org/content/bidmc/1.0.0/#files).
+
+The builder estimates phases offline from the full 125 Hz waveform. It averages
+25 adjacent samples around each point to reduce small fluctuations. The first
+annotator's breath marks locate candidate peaks within 0.35 seconds on either
+side. The estimated inhale begins where the smoothed trace leaves the lowest
+8% of its local rise. The peak marks the estimated exhale start when the next
+interval can be classified. The closed state lasts until the next estimated
+inhale and can include a pause between breaths. Both times come from waveform
+samples. Missing samples, incomplete intervals and ambiguous rises can produce
+an unknown state.
+At 1× the bedside display changes on the first rendered frame at or after the
+original estimated timestamp. Impedance is a proxy for breathing. These
+boundaries are offline estimates for the replay, with no independent airflow
+measurements for validation.
+
+The review demo compares six consecutive valid readings with an earlier
+median. A rise or fall of at least two percentage points throughout that
+comparison produces a notice. Three consecutive unavailable readings produce
+a signal notice. A later valid reading marks the return of data. These are
+demo rules for the recordings, not clinical alert settings.
 It supports quoted commas, escaped quotes, multiline fields and CRLF. Malformed
 rows, missing headers and conflicting duplicate timestamps fail conversion.
 Exact duplicate numeric rows are removed and counted. Rows are sorted by time.
@@ -34,12 +68,11 @@ averaging annotations or assuming that two entries on the same row refer to
 the same breath. Out-of-coverage annotations fail conversion. A declared but
 unavailable annotation file fails loading visibly instead of silently degrading.
 
-Subject 01 and 02 JSON files are retained as legacy fixtures but are not indexed
-by the active subject 04 manifest. Their array-index timing is supported only
-as a documented legacy format by `normalizeSubject`; new conversion always
-writes explicit timestamps.
+The Subject 02 JSON file remains an unindexed legacy fixture.
+`normalizeSubject` continues to support its array-index timing. New conversion
+always writes explicit timestamps.
 
-## Event matching
+## Event matching in the research workspace
 
 `EventMatcher` receives reference timestamps separately from controller inputs.
 `ReplayRunner` passes only current pressure and recorded measurements to
@@ -66,7 +99,7 @@ Mean signed timing offset is detection time minus reference time. A negative
 offset means earlier than the annotation, never predicted inhalation. The
 synthetic pressure deliberately begins before each annotated peak.
 
-## Timing, summaries and UI
+## Research replay timing, summaries and UI
 
 Runner intervals are 0.1 s with a final shortened interval if needed. Integer
 tick indices avoid accumulated clock drift. Local recording time is separate

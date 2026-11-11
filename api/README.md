@@ -36,7 +36,7 @@ Provision a research token from a trusted terminal:
 php artisan research:token researcher@example.test --name="Researcher"
 ```
 
-The command creates or finds the account, issues a token with the `research` ability and a 30-day expiry, and prints that token once. Paste it into **Saved runs → Private API connection**. The frontend stores it in `sessionStorage` for that tab session. Keep it out of source control and shared logs. Issuing a replacement with `--revoke` revokes that user's existing tokens; use that option deliberately.
+The command creates or finds the account, issues a token with the `research` ability and a 30-day expiry, and prints that token once. Paste it into **Saved runs** in the research workspace. The frontend stores it in `sessionStorage` for that tab session. Keep it out of source control and shared logs. Issuing a replacement with `--revoke` revokes that user's existing tokens; use that option deliberately.
 
 All `/api/runs` and `/api/ai/*` routes require bearer authentication and the research ability. Each lookup is scoped to the authenticated owner. Listing returns the latest 50 owned runs. The general limit is 60 requests/minute, with save and AI routes additionally limited to 10/minute. Request bodies are bounded at 8 MiB. CORS permits the configured frontend origins; it is not an authentication substitute.
 
@@ -48,6 +48,7 @@ All `/api/runs` and `/api/ai/*` routes require bearer authentication and the res
 - `POST /api/ai/handover`: `{run_id}`, returns `{note, source, reason}`.
 - `POST /api/ai/ask`: `{run_id, question}`, returns `{answer, source, reason}`.
 - `POST /api/ai/explain-event`: `{run_id, event_id}`, returns `{explanation, source, reason}`. The event identifier is stable within the run; it is not an array index.
+- `POST /api/ai/replay`: subject, view, action, and selected time window, plus an event ID for explanations or a question for Ask. Returns text and source evidence from that window. Laravel reads the prepared recordings and evidence in `web/public/replay/`. If the API is deployed separately, set `REPLAY_DATA_DIRECTORY` to a local copy of that same directory.
 
 `StoreRunRequest` validates configuration bounds, nested finite values, identifiers, history sizes, source gas arithmetic, coverage categories and timestamps. Saved data includes actual duration, full resolved controller configuration, seed, faults, alarm lifecycle, event history, chart samples and internal schema/model/controller identifiers. Server validation checks structure and consistency. Provenance remains `client-submitted`; this is not independent scientific verification.
 
@@ -66,6 +67,10 @@ CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 ```
 
 Supported adapters are `google`, `openai`, `anthropic`, `groq`, and `openrouter`. Set a model identifier supported by the selected provider; no provider key or model is required for deterministic template responses. Keys stay in the API environment.
+
+For the replay assistant, configure `AI_PROVIDER=openai`, `AI_API_KEY`, and `AI_MODEL`. The backend also recognizes `OPENAI_API_KEY` and `OPENAI_MODEL` when the corresponding generic settings are absent. The configured OpenAI model selects evidence for the replay response. Laravel supplies the readings, times and text from that evidence.
+
+The public `POST /api/ai/replay` uses only bundled BIDMC replay evidence and requires no research token. Its limits are 10 requests per minute per client IP, 30 per minute across the demo, and 500 per day across the demo. Use a persistent, shared cache when running more than one backend instance so these limits apply across the deployment.
 
 TLS verification is enabled. If the PHP installation lacks a usable trust store, configure PHP's `curl.cainfo`/`openssl.cafile` or set `AI_CA_BUNDLE` to a readable trusted CA bundle. Do not disable certificate verification. Provider failures log only bounded provider/status metadata, never credentials or upstream response bodies.
 

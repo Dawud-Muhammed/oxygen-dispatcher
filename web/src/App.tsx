@@ -1,115 +1,110 @@
-import { useState } from "react";
-import type { ExperimentConfig } from "./sim/engine";
-import { Configuration } from "./workspace/Configuration";
-import { SimulationWorkspace } from "./workspace/SimulationWorkspace";
-import { SavedRuns } from "./workspace/SavedRuns";
-import { Disclaimer } from "./components/Disclaimer";
+import { lazy, Suspense, useState } from "react";
+import { ReplayAssistant } from "./components/ReplayAssistant";
 import { ReplayDashboard } from "./components/ReplayDashboard";
-import "./index.css";
-type View = "simulation" | "replay" | "library";
+import { SpO2Review } from "./workspace/SpO2Review";
+import "./dispatcher.css";
+
+const ResearchWorkspace = lazy(() => import("./ResearchWorkspace"));
 
 export default function App() {
-  const [view, setView] = useState<View>("simulation"),
-    [config, setConfig] = useState<ExperimentConfig | null>(null),
-    [session, setSession] = useState(0),
-    [refresh, setRefresh] = useState(0),
-    [authEpoch, setAuthEpoch] = useState(0);
+  if (
+    new URLSearchParams(window.location.search).get("workspace") === "research"
+  ) {
+    return (
+      <Suspense fallback={<p role="status">Loading research workspace…</p>}>
+        <ResearchWorkspace />
+      </Suspense>
+    );
+  }
+  return <Dispatcher />;
+}
+
+function Dispatcher() {
+  const [view, setView] = useState<"valve" | "spo2">("valve");
 
   return (
-    <div className="shell">
-      <header className="topbar">
-        <div className="brand">
-          <span className="brandmark" aria-hidden="true">
-            O₂
-          </span>
-          <div>
-            Oxygen Dispatcher
-            <div className="research-label">Research workspace</div>
+    <div className="od-app">
+      <header className="od-topbar">
+        <div className="od-topbar-inner">
+          <div className="od-brand">
+            <span className="od-mark" aria-hidden="true">
+              O₂
+            </span>
+            <strong>Oxygen Dispatcher</strong>
           </div>
-        </div>
-        <nav className="tabs" aria-label="Workspace views">
-          {(
-            [
-              ["simulation", "Simulation"],
-              ["replay", "Recorded-data replay"],
-              ["library", "Saved runs"],
-            ] as const
-          ).map(([v, label]) => (
+          <nav className="od-navigation" aria-label="Workspace views">
             <button
-              key={v}
-              aria-current={view === v ? "page" : undefined}
-              className={view === v ? "active" : ""}
-              onClick={() => setView(v)}
+              aria-current={view === "valve" ? "page" : undefined}
+              onClick={() => setView("valve")}
             >
-              {label}
+              Valve Replay
             </button>
-          ))}
-        </nav>
+            <button
+              aria-current={view === "spo2" ? "page" : undefined}
+              onClick={() => setView("spo2")}
+            >
+              SpO₂ Review
+            </button>
+          </nav>
+          <button
+            className="od-access-button"
+            onClick={() => {
+              const input = document.getElementById(
+                "replay-ai-question-" + view,
+              );
+              input?.scrollIntoView({ block: "nearest" });
+              input?.focus({ preventScroll: true });
+            }}
+          >
+            <span aria-hidden="true">✦</span> Ask AI
+          </button>
+        </div>
       </header>
-      <main>
-        <div className="intro">
+      <main className="od-content">
+        <div className="od-page-heading">
           <div>
-            <div className="eyebrow">
-              {view === "simulation"
-                ? "Model · Compare · Understand"
-                : view === "replay"
-                  ? "Load · Replay · Inspect"
-                  : "Review · Reproduce · Export"}
-            </div>
-            <h1>
-              {view === "simulation"
-                ? "Explore oxygen delivery."
-                : view === "replay"
-                  ? "Inspect recorded signals."
-                  : "Keep the complete experiment."}
-            </h1>
+            <h1>{view === "valve" ? "Valve Replay" : "SpO₂ Review"}</h1>
             <p>
-              {view === "simulation"
-                ? "Test a delivery policy against the same synthetic patient inputs. Follow every modeled litre, signal fault and controller decision."
-                : view === "replay"
-                  ? "Recorded SpO₂ and respiratory annotations exercise the signal pipeline. Annotation-derived pressure is synthetic."
-                  : "Reopen results with their original configuration, measured coverage, events and model assumptions."}
+              {view === "valve"
+                ? "See how the virtual valve follows estimated breathing phases from the recorded waveform."
+                : "Review changes and gaps in recorded oxygen saturation."}
             </p>
           </div>
+          <span className="od-source-label">BIDMC research replay</span>
         </div>
-        <Disclaimer />
-        {config ? (
-          <SimulationWorkspace
-            key={session}
-            config={config}
-            active={view === "simulation"}
-            onNew={() => {
-              setConfig(null);
-              setSession((s) => s + 1);
-            }}
-            authEpoch={authEpoch}
-            onSaved={() => setRefresh((r) => r + 1)}
-          />
-        ) : (
-          <div hidden={view !== "simulation"}>
-            <Configuration
-              onApply={(c) => {
-                setConfig(c);
-                setSession((s) => s + 1);
-              }}
-            />
-          </div>
-        )}
-        <div hidden={view !== "replay"}>
-          <ReplayDashboard active={view === "replay"} />
-        </div>
-        <div hidden={view !== "library"}>
-          <SavedRuns
-            refresh={refresh}
-            authEpoch={authEpoch}
-            onAuth={() => setAuthEpoch((n) => n + 1)}
+        <div hidden={view !== "valve"}>
+          <ReplayDashboard
+            active={view === "valve"}
+            renderAssistant={({ subjectId, startS, endS, eventId, seek }) => (
+              <ReplayAssistant
+                key={subjectId}
+                subjectId={subjectId}
+                view="valve"
+                startS={startS}
+                endS={endS}
+                eventId={eventId}
+                onEvidence={seek}
+              />
+            )}
           />
         </div>
+        <div hidden={view !== "spo2"}>
+          <SpO2Review active={view === "spo2"} />
+        </div>
+        <footer className="od-footer">
+          <span>
+            Recorded data and virtual valve commands. For research and
+            demonstration.
+          </span>
+          <a
+            href="https://physionet.org/content/bidmc/1.0.0/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            BIDMC dataset ↗
+          </a>
+        </footer>
       </main>
-      <footer className="footer">
-        Oxygen Dispatcher · Research simulation and recorded-data replay. No
-        clinical efficacy or hospital cost savings have been established.
-      </footer>
     </div>
   );
 }

@@ -26,5 +26,10 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('research', fn (Request $request) => Limit::perMinute(60)->by('all:'.$request->user()->id));
         RateLimiter::for('research-saves', fn (Request $request) => Limit::perMinute(10)->by('save:'.$request->user()->id));
         RateLimiter::for('research-ai', fn (Request $request) => Limit::perMinute(10)->by('ai:'.$request->user()->id));
+        RateLimiter::for('replay-ai', fn (Request $request) => [
+            Limit::perMinute(10)->by('client:'.$request->ip()),
+            Limit::perMinute(30)->by('all:minute'),
+            Limit::perDay(500)->by('all:day'),
+        ]);
     }
 }

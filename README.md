@@ -1,6 +1,6 @@
 # Oxygen Dispatcher
 
-A research workspace for synthetic oxygen-delivery experiments and recorded-data integration checks. No physical sensor or valve is connected. The model is uncalibrated and does not establish clinical efficacy, safety certification, or hospital savings.
+A research workspace for demonstrating virtual valve timing and SpO₂ review with BIDMC recordings. No physical sensor or valve is connected. The demo does not measure gas consumption, establish clinical effectiveness, or verify oxygen savings.
 
 ## Run the dashboard
 
@@ -12,7 +12,7 @@ npm ci
 npm run dev
 ```
 
-Open the local URL printed by Vite. Simulation, recording replay, browser storage and JSON export work without an API or AI key. The converted active BIDMC recording is included in `web/public/replay/`.
+Open the local URL printed by Vite. You can play both recordings without the API. To use **Ask AI**, also start the Laravel API below. The prepared recordings and their event evidence are included in `web/public/replay/`.
 
 Checks:
 
@@ -23,15 +23,13 @@ npm run build
 npm run format:check
 ```
 
-## Main workflows
+## Demo workflows
 
-1. **Configure and prepare.** Select scenario, duration, seed and continuous flow. Expand the research settings to change controller bounds, fallback delivery and utilization. Preparation validates and freezes a configuration.
-2. **Start and observe.** Pause/resume without changing scientific steps. Introduce a 30-second signal fault, inspect its consequences, and acknowledge alarms without clearing their causes. Reset creates a new run identity. Configure a new experiment to change assumptions.
-3. **Finish and review.** Runs stop at the requested duration. Review gas use, measured range durations, unavailable data, coverage and alarm episodes. Save in this browser, export JSON, or save to an authenticated API. Negative gas reduction remains negative; zero baseline shows “Not applicable.”
-4. **Reopen.** Saved runs retain configuration, fault schedule, aggregates, alarm/event history and sampled full-run charts. Browser copies can be removed individually after export.
-5. **Replay.** Select a recording, play, pause, reset and inspect matching results. Playback stops by default. Optional repeat keeps completed-pass results and cumulative scores. Switching views or hiding the tab pauses execution.
+1. **Valve Replay.** Play BIDMC Subject 04 at 1× to see the virtual valve follow estimated inhale and exhale on the original clock. The chart displays the recorded chest impedance waveform. Select a valve transition to inspect its timestamp and the waveform feature behind it.
+2. **SpO₂ Review.** Select a rising, falling or missing-reading case and choose **Jump to case**. Play the original readings and inspect the on-screen notice. Acknowledge the notice or record a manual demo setting change. A SpO₂ notice cannot change that setting, and the setting does not change the recording.
+3. **Replay assistant.** Select **Ask AI** on either replay. Explain a selected valve change or notice, ask about the time window shown in the chart, or draft a handover for review. The assistant uses only the selected recording and links its answers to source evidence. Follow-up questions can refer to earlier questions in the same window.
 
-Acceleration requests simulated seconds per elapsed foreground second. Rendering is limited independently. Long scheduling interruptions earn no catch-up time; hardware throughput may limit achievable acceleration.
+Add `?workspace=research` to the local URL to reopen the original synthetic experiments and saved runs. This workspace retains its modeled flow adjustments and financial estimates for internal testing.
 
 ## Project structure
 
@@ -61,7 +59,7 @@ Below/within/above range and missing/invalid/stale/low-quality intervals cover t
 
 The financial calculator uses episodes × oxygen-hours per episode × flow × 60. It separately reports gas reduction, hypothetical avoided cash cost, a configurable fee and fixed charge, other costs, and net benefit. Prices and cash realization are placeholders; a simulated gas reduction is not a verified hospital cash saving.
 
-## Optional private API
+## Laravel API and AI setup
 
 Use PHP and Composer versions compatible with `api/composer.json` and its lockfile. See `api/README.md` for database, access-token, TLS and AI setup. The frontend API base is configured using:
 
@@ -69,15 +67,15 @@ Use PHP and Composer versions compatible with `api/composer.json` and its lockfi
 VITE_API_URL=http://localhost:8000/api
 ```
 
-The API requires a provisioned personal access token for saved-run and AI routes. Enter it in **Saved runs → Private API connection**. The browser stores it only for the tab session. Saved records are owner-scoped, retries reuse a stable client run identifier, and older unowned records remain preserved and inaccessible to ordinary users. Additive migrations do not reinterpret old results as current-model evidence.
+The demo replay assistant works without a browser token when the API is running. The OpenAI key stays in the Laravel environment. Private saved simulation records still require a research token; enter it in **Saved runs** in the research workspace using the setup in [api/README.md](api/README.md).
 
-The API validates submitted structure and aggregate consistency; it does not independently recompute the TypeScript experiment. AI explanations consume saved context only and cannot control delivery or modify runs. Missing providers and failures return clearly marked deterministic text. Credentials stay server-side; certificate verification remains enabled.
+The replay assistant loads the selected window from the prepared BIDMC evidence on the server. It explains recorded readings, waveform-based virtual valve commands, or review notices. A provider failure produces a labeled automatic summary. The saved-run API checks the structure and arithmetic of submitted simulations.
 
 ## Replay attribution and limits
 
 The source is the [BIDMC PPG and Respiration Dataset](https://physionet.org/content/bidmc/1.0.0/). Preserve its source attribution and applicable dataset license when redistributing source or derived files.
 
-Replay uses recorded SpO₂ and **synthetic pressure derived from respiratory annotations**. Scoring that fixture against those same annotations is an integration exercise, not independent detection validation. Annotator 1 is the explicit reference; annotator 2 and disagreement metadata are retained. Negative timing means earlier than the chosen annotation, not prediction. The recording cannot establish treatment response or oxygen savings.
+Valve Replay uses BIDMC's recorded chest impedance and offline estimates of breathing phase. The source measures chest impedance rather than airflow, so the phase boundaries are estimates. The separate research workspace uses synthetic pressure derived from breath annotations to test controller logic. Its scores describe that integration test. These recordings cannot establish treatment response or oxygen savings.
 
 See `docs/replay.md` for conversion commands, timestamp coverage, source hashes, matching boundaries and repeat behavior.
 

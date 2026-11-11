@@ -1,0 +1,20 @@
+{
+  "subjectId": "01",
+  "durationS": 480,
+  "events": [
+    {
+      "id": "spo2-missing-113",
+      "kind": "spo2-missing",
+      "timeS": 113,
+      "label": "SpO₂ reading unavailable",
+      "detail": "No valid recorded reading since 111 s. Check the signal."
+    },
+    {
+      "id": "spo2-restored-124",
+      "kind": "spo2-restored",
+      "timeS": 124,
+      "label": "SpO₂ reading returned",
+      "detail": "The next valid reading is 98% at 124 s."
+    }
+  ]
+}

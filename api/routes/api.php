@@ -1,8 +1,11 @@
 <?php
 
 use App\Http\Controllers\AiController;
+use App\Http\Controllers\ReplayAiController;
 use App\Http\Controllers\RunController;
 use Illuminate\Support\Facades\Route;
+
+Route::post('/ai/replay', ReplayAiController::class)->middleware('throttle:replay-ai');
 
 Route::middleware(['auth:sanctum', \App\Http\Middleware\ResearchAccess::class, 'throttle:research'])->group(function () {
     Route::post('/runs', [RunController::class, 'store'])->middleware('throttle:research-saves');

@@ -236,6 +236,10 @@ export function convertDirectory(inputDir, outputDir) {
     ]);
     subjects.push(entry);
   }
+  // Subject 04 anchors the bedside demonstration even as more recordings are added.
+  subjects.sort(
+    (left, right) => Number(right.id === "04") - Number(left.id === "04"),
+  );
   fs.mkdirSync(outputDir, { recursive: true });
   for (const [name, data] of outputs)
     fs.writeFileSync(path.join(outputDir, name), JSON.stringify(data));

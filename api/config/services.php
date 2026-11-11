@@ -1,5 +1,9 @@
 <?php
 
+$openAiKey = env('OPENAI_API_KEY');
+$aiKey = env('AI_API_KEY');
+$aiProvider = env('AI_PROVIDER') ?: (!$aiKey && $openAiKey ? 'openai' : 'google');
+
 return [
 
     /*
@@ -38,10 +42,14 @@ return [
     // ── Adaptive Oxygen Dispatcher – AI settings ──────────────────────────
     // Provider values: google | openai | anthropic | groq | openrouter
     'ai' => [
-        'provider' => env('AI_PROVIDER', 'google'),
-        'api_key'  => env('AI_API_KEY'),
-        'model'    => env('AI_MODEL'),
+        'provider' => $aiProvider,
+        'api_key'  => $aiKey ?: ($aiProvider === 'openai' ? $openAiKey : null),
+        'model'    => env('AI_MODEL') ?: ($aiProvider === 'openai' ? env('OPENAI_MODEL') : null),
         'ca_bundle' => env('AI_CA_BUNDLE'),
+    ],
+
+    'replay' => [
+        'directory' => env('REPLAY_DATA_DIRECTORY') ?: base_path('../web/public/replay'),
     ],
 
 ];

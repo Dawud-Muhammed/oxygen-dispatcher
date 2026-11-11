@@ -174,6 +174,50 @@ describe("Replay validation and clock", () => {
     expect(s.spo2).toBeNull();
     expect(runner.step()).toEqual(s);
   });
+  it("keeps recorded SpO₂ visible without giving it control of the review valve", () => {
+    const recording = {
+      ...subject("pressure-only", 5),
+      breathTimesS: [1.5, 3],
+    };
+    const config = {
+      ...ctrlCfg,
+      initialFlow: 3,
+      warmupS: 0.3,
+      criticalDurationS: 0.2,
+      adjustmentIntervalS: 0.5,
+      averageWindowS: 0.5,
+    };
+    const reference = new ReplayRunner([recording], config, {
+      reviewOnly: true,
+    });
+    const changing = new ReplayRunner(
+      [
+        {
+          ...recording,
+          samples: [
+            { timeS: 0, value: 85 },
+            { timeS: 1, value: null },
+            { timeS: 2, value: 99 },
+          ],
+        },
+      ],
+      config,
+      { reviewOnly: true },
+    );
+    const states = new Set<boolean>();
+    const recordedReadings = new Set<number | null>();
+    for (let tick = 0; tick < 50; tick++) {
+      const left = reference.step();
+      const right = changing.step();
+      expect(right.ctrlOutput.mode).toBe(left.ctrlOutput.mode);
+      expect(right.valveOpen).toBe(left.valveOpen);
+      expect(right.flowSetpoint).toBe(3);
+      states.add(right.valveOpen);
+      recordedReadings.add(right.spo2);
+    }
+    expect(states).toEqual(new Set([true, false]));
+    expect(recordedReadings).toEqual(new Set([85, null, 99]));
+  });
   it("preserves outgoing summary and resets relative time for next subject", () => {
     const runner = new ReplayRunner(
       [subject("first", 2), subject("second", 2)],

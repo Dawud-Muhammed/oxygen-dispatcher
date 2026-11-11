@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generated": "2026-11-04T19:46:05.335Z",
+  "generated": "2026-11-11T17:03:52.367Z",
   "dataset": "BIDMC PPG and Respiration Dataset",
   "subjects": [
     {
@@ -11,6 +11,30 @@
       "hasBreaths": true,
       "durationS": 480,
       "breathsFile": "subject_04_breaths.json"
+    },
+    {
+      "id": "01",
+      "file": "subject_01.json",
+      "description": "Subject 01 · recorded SpO₂",
+      "hasSpO2": true,
+      "hasBreaths": false,
+      "durationS": 480
+    },
+    {
+      "id": "22",
+      "file": "subject_22.json",
+      "description": "Subject 22 · recorded SpO₂",
+      "hasSpO2": true,
+      "hasBreaths": false,
+      "durationS": 480
+    },
+    {
+      "id": "46",
+      "file": "subject_46.json",
+      "description": "Subject 46 · recorded SpO₂",
+      "hasSpO2": true,
+      "hasBreaths": false,
+      "durationS": 480
     }
   ]
 }

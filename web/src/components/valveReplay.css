@@ -1,0 +1,544 @@
+.valve-workspace {
+  --valve-border: #d8e5e3;
+  --valve-muted: #536d70;
+  --valve-ink: #17353b;
+  --valve-phase-color: #87999c;
+  color: var(--valve-ink);
+  min-width: 0;
+}
+
+.valve-workspace [data-phase="inhaling"] {
+  --valve-phase-color: #17815a;
+}
+
+.valve-workspace [data-phase="exhaling"] {
+  --valve-phase-color: #ac4b49;
+}
+
+.valve-panel-heading p {
+  color: var(--valve-muted);
+  margin: 0;
+}
+
+.valve-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #f7fbfa;
+  color: #245b55;
+  text-decoration: none;
+  padding: 3px 7px;
+  border: 1px solid var(--valve-border);
+  border-radius: 8px;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.valve-source:hover {
+  border-color: #7aab9f;
+  background: #eaf5f1;
+}
+
+.valve-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 2.15fr) minmax(274px, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.valve-main,
+.valve-aside {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.valve-panel {
+  min-width: 0;
+  padding: 17px;
+  background: #fff;
+  border: 1px solid var(--valve-border);
+  border-radius: 15px;
+  box-shadow: 0 6px 18px #173c3708;
+}
+
+.valve-panel h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+
+.valve-panel-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 13px;
+  margin-bottom: 13px;
+}
+
+.valve-panel-heading p {
+  margin-top: 3px;
+  font-size: 13px;
+}
+
+.valve-panel-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.valve-mode {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: #eef2f3;
+  color: #496267;
+  font-size: 12px;
+  font-weight: 680;
+  white-space: nowrap;
+}
+
+.valve-mode::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.valve-mode[data-phase="inhaling"] {
+  background: #e6f4ed;
+  color: #116044;
+}
+
+.valve-mode[data-phase="exhaling"] {
+  background: #fae9e7;
+  color: #8d3e3d;
+}
+
+.valve-scene {
+  position: relative;
+  isolation: isolate;
+  container-type: inline-size;
+  aspect-ratio: 2.1;
+  min-height: 180px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #d2e1de;
+  border-radius: 11px;
+  background: #e2f0eb;
+}
+
+.valve-scene-art {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  aspect-ratio: 3 / 2;
+  transform: translateY(-50%);
+  z-index: -2;
+}
+
+.valve-scene-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.valve-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, transparent 70%, #173c372b);
+}
+
+.valve-equipment {
+  position: absolute;
+  bottom: 10px;
+  background: #fffffff0;
+  border: 1px solid #d0e2de;
+  border-radius: 7px;
+  padding: 4px 8px;
+  color: #294e52;
+  font-weight: 650;
+  font-size: 12px;
+}
+
+.valve-cylinder {
+  left: 10px;
+}
+
+.valve-patient {
+  right: 10px;
+}
+
+.valve-device {
+  position: absolute;
+  /* Screen coordinates are percentages of the full bedside artwork. */
+  top: 47.36%;
+  left: 36.82%;
+  width: 9.45%;
+  height: 7.3%;
+  border-radius: 5% / 10%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  color: #bfd3d8;
+  white-space: nowrap;
+  transition:
+    color 120ms ease,
+    background-color 120ms ease;
+}
+
+.valve-device strong {
+  display: inline-flex;
+  align-items: center;
+  gap: min(0.55cqi, 5px);
+  font: 750 min(1.85cqi, 17px) / 1 var(--mono);
+  letter-spacing: 0.025em;
+}
+
+.valve-device i {
+  width: min(0.7cqi, 6px);
+  height: min(0.7cqi, 6px);
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.valve-device[data-state="open"] {
+  color: #a4ffc6;
+  background-color: #10553680;
+}
+
+.valve-device[data-state="closed"] {
+  color: #ffb5b2;
+  background-color: #70212280;
+}
+
+.valve-state-readout {
+  display: none;
+}
+
+.valve-transport {
+  padding-top: 14px;
+}
+
+.valve-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.valve-controls button,
+.valve-jump-controls button {
+  padding: 7px 10px;
+  min-height: 38px;
+}
+
+.valve-play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 132px;
+}
+
+.valve-play:hover {
+  background-color: #075b52;
+}
+
+.valve-speed {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  margin-left: 4px;
+  color: var(--valve-muted);
+}
+
+.valve-speed select {
+  min-height: 36px;
+  padding: 4px 6px;
+  font-size: 13px;
+}
+
+.valve-time {
+  margin-left: auto;
+  color: var(--valve-muted);
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.valve-time strong {
+  color: var(--valve-ink);
+}
+
+.valve-transport input[type="range"] {
+  display: block;
+  padding: 0;
+  width: 100%;
+  min-height: 20px;
+  margin: 8px 0 0;
+  cursor: pointer;
+}
+
+.valve-transport p,
+.valve-load-error {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+
+.valve-load-error {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 7px;
+  color: #8b292f;
+}
+
+.valve-jump-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.valve-jump-controls button {
+  min-width: 38px;
+}
+
+.valve-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 15px;
+  color: var(--valve-muted);
+  font-size: 12px;
+}
+
+.valve-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.valve-legend i {
+  display: inline-block;
+  width: 17px;
+  height: 2px;
+  background: #08756d;
+}
+
+.valve-legend [data-phase] i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--valve-phase-color);
+}
+
+.valve-chart {
+  height: 180px;
+  min-width: 0;
+  margin-top: 3px;
+  font-size: 11px;
+}
+
+.valve-phase-strip {
+  display: flex;
+  height: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  border-radius: 3px;
+}
+
+.valve-phase-strip span {
+  flex-basis: 0;
+  background: var(--valve-phase-color);
+}
+
+.valve-inspector {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px 12px;
+  padding: 9px 11px;
+  background: #f1f7f5;
+  border: 1px solid var(--valve-border);
+  border-radius: 9px;
+  font-size: 12px;
+}
+
+.valve-inspector > span {
+  white-space: nowrap;
+}
+
+.valve-inspector strong,
+.valve-event-list button span {
+  font-family: var(--mono);
+  font-weight: 700;
+}
+
+.valve-inspector p {
+  flex: 1 0 70%;
+  margin: 0;
+  color: var(--valve-muted);
+}
+
+.valve-inspector button {
+  padding: 2px 7px;
+  font-size: 12px;
+  margin-left: auto;
+}
+
+.valve-inspect-phase {
+  color: var(--valve-muted);
+  font-weight: 700;
+}
+
+.valve-inspect-phase[data-phase="inhaling"],
+.valve-inspect-phase[data-phase="exhaling"] {
+  color: var(--valve-phase-color);
+}
+
+.valve-event-list {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  margin: 5px -4px -4px;
+  overflow-x: auto;
+}
+
+.valve-event-list button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 7px;
+  flex: 0 0 auto;
+  color: #35585c;
+  font-size: 12px;
+}
+
+.valve-event-list button[aria-pressed="true"] {
+  background: #e4f3ee;
+  border-color: #73ab9e;
+  color: #1b5c4f;
+}
+
+.valve-empty {
+  color: var(--valve-muted);
+  margin-bottom: 0;
+}
+
+.valve-readings dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.valve-readings dl div {
+  min-width: 0;
+  padding: 9px 7px;
+  background: #f0f6f4;
+  border: 1px solid #e1ece8;
+  border-radius: 8px;
+}
+
+.valve-readings dt {
+  color: var(--valve-muted);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.valve-readings dd {
+  margin: 0;
+  font-size: clamp(16px, 1.7vw, 24px);
+  font-weight: 720;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+}
+
+.valve-readings dd small {
+  font-size: 11px;
+  letter-spacing: 0;
+}
+
+.valve-readings p {
+  color: var(--valve-muted);
+  font-size: 13px;
+  margin: 0 0 8px;
+}
+
+.valve-export {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-color: transparent;
+  color: #256a60;
+  font-size: 12px;
+}
+
+@media (max-width: 920px) {
+  .valve-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .valve-aside {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .valve-aside {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .valve-panel {
+    padding: 13px;
+  }
+  .valve-mode {
+    white-space: normal;
+  }
+  .valve-scene {
+    aspect-ratio: 1.6;
+    min-height: 0;
+  }
+  .valve-state-readout {
+    display: block;
+    margin-top: 7px;
+    color: var(--valve-muted);
+    font-size: 13px;
+  }
+  .valve-state-readout strong {
+    color: var(--valve-ink);
+  }
+  .valve-controls {
+    gap: 6px;
+  }
+  .valve-time {
+    margin-left: 0;
+  }
+  .valve-equipment {
+    padding: 2px 5px;
+    font-size: 11px;
+  }
+}
+
+@container (max-width: 330px) {
+  .valve-device i {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .valve-device {
+    transition: none;
+  }
+}
