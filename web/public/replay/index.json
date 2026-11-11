@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "generated": "2026-11-04T19:46:05.335Z",
+  "dataset": "BIDMC PPG and Respiration Dataset",
+  "subjects": [
+    {
+      "id": "04",
+      "file": "subject_04.json",
+      "description": "Subject 04 · recorded SpO₂ and breath annotations",
+      "hasSpO2": true,
+      "hasBreaths": true,
+      "durationS": 480,
+      "breathsFile": "subject_04_breaths.json"
+    }
+  ]
+}
