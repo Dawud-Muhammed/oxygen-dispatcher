@@ -71,6 +71,7 @@ function ReviewSession({
   >([]);
   const {
     recording,
+    sessionKey,
     evidence,
     timeS,
     playing,
@@ -411,10 +412,11 @@ function ReviewSession({
           )}
         </section>
         <ReplayAssistant
+          key={sessionKey}
           subjectId={selected.id}
           view="spo2"
           startS={startS}
-          endS={endS}
+          endS={timeS}
           eventId={latest && latest.timeS >= startS ? latest.id : undefined}
           onEvidence={seek}
           reviewActions={reviewActions}

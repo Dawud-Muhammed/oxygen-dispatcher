@@ -75,9 +75,16 @@ function Dispatcher() {
         <div hidden={view !== "valve"}>
           <ReplayDashboard
             active={view === "valve"}
-            renderAssistant={({ subjectId, startS, endS, eventId, seek }) => (
+            renderAssistant={({
+              subjectId,
+              startS,
+              endS,
+              eventId,
+              seek,
+              sessionKey,
+            }) => (
               <ReplayAssistant
-                key={subjectId}
+                key={sessionKey}
                 subjectId={subjectId}
                 view="valve"
                 startS={startS}

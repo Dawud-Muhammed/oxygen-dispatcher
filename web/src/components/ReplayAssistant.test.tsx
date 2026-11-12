@@ -1,5 +1,11 @@
 // @vitest-environment happy-dom
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  act,
+} from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { setToken } from "../api/client";
 import { ReplayAssistant } from "./ReplayAssistant";
@@ -8,6 +14,62 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
   setToken("");
+});
+
+it("answers at zero without reading ahead or calling AI", async () => {
+  const fetch = vi.fn();
+  vi.stubGlobal("fetch", fetch);
+  render(<ReplayAssistant subjectId="04" view="valve" startS={0} endS={0} />);
+  fireEvent.click(screen.getByRole("button", { name: "Draft handover" }));
+  await screen.findByText(/No playback has elapsed/);
+  expect(fetch).not.toHaveBeenCalled();
+});
+
+it("discards an in-flight answer when the playback session resets", async () => {
+  let resolve!: (response: Response) => void;
+  let signal: AbortSignal;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn((_url, init) => {
+      signal = init.signal;
+      return new Promise<Response>((done) => {
+        resolve = done;
+      });
+    }),
+  );
+  const { rerender } = render(
+    <ReplayAssistant
+      key="session-1"
+      subjectId="04"
+      view="valve"
+      startS={0}
+      endS={2}
+    />,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Draft handover" }));
+  rerender(
+    <ReplayAssistant
+      key="session-2"
+      subjectId="04"
+      view="valve"
+      startS={0}
+      endS={0}
+    />,
+  );
+  expect(signal!.aborted).toBe(true);
+  await act(async () =>
+    resolve(
+      Response.json({
+        text: "Old session answer",
+        source: "ai",
+        reason: null,
+        evidence: [],
+      }),
+    ),
+  );
+  expect(screen.queryByText("Old session answer")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Draft handover" }));
+  await screen.findByText(/No playback has elapsed/);
 });
 
 it("keeps follow-up questions in the same replay window and leaves private credentials out", async () => {

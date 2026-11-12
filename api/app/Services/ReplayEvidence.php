@@ -12,7 +12,7 @@ class ReplayEvidence
         $subjects = $index['subjects'] ?? [];
         $entry = collect($subjects)->firstWhere('id', $subject);
         abort_unless($entry, 404, 'Recording unavailable.');
-        abort_if($view === 'valve' && !($entry['hasBreaths'] ?? false), 422, 'This recording has no breath annotations.');
+        abort_if($view === 'valve' && ! ($entry['hasBreaths'] ?? false), 422, 'This recording has no breath annotations.');
 
         $recording = $this->read("subject_{$subject}.json");
         $bundle = $this->read("subject_{$subject}_evidence.json");
@@ -65,13 +65,13 @@ class ReplayEvidence
             : ['spo2-rise', 'spo2-fall', 'spo2-missing', 'spo2-restored'];
         $scoped = [];
         foreach ($events as $event) {
-            if (!in_array($event['kind'] ?? null, $kinds, true)) {
+            if (! in_array($event['kind'] ?? null, $kinds, true)) {
                 continue;
             }
             $time = $event['timeS'] ?? null;
             $id = $event['id'] ?? null;
             abort_unless(
-                is_string($id) && $id !== '' && !isset($scoped[$id]) &&
+                is_string($id) && $id !== '' && ! isset($scoped[$id]) &&
                 $this->validNumber($time) &&
                 is_string($event['label'] ?? null) &&
                 is_string($event['detail'] ?? null),
@@ -86,11 +86,27 @@ class ReplayEvidence
                 'timeS' => $time,
                 'kind' => $event['kind'],
                 'label' => $event['label'],
-                'detail' => $event['detail'],
+                'detail' => $this->detailThrough($event['detail'], $end),
             ];
         }
 
         return $scoped;
+    }
+
+    private function detailThrough(string $detail, float $end): string
+    {
+        // Bundled phase descriptions contain the complete offline interval.
+        // An ongoing phase must not disclose its future endpoint to the AI.
+        return preg_replace_callback('/ for [0-9.]+ s \(([0-9.]+)–([0-9.]+) s\)\.$/u',
+            function (array $match) use ($end): string {
+                if ((float) $match[2] <= $end) {
+                    return $match[0];
+                }
+
+                return ' for '.self::number(max(0, $end - (float) $match[1])).
+                    ' s so far, through playback time '.self::number($end).
+                    ' s. The next phase change has not been reached.';
+            }, $detail) ?? $detail;
     }
 
     private function readings(array $samples, float $start, float $end): array

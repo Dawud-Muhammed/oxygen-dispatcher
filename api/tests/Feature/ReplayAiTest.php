@@ -71,6 +71,34 @@ class ReplayAiTest extends TestCase
         ])]);
     }
 
+    public function test_zero_playback_has_no_handover_or_provider_call(): void
+    {
+        $this->postJson('/api/ai/replay', $this->payload([
+            'action' => 'handover', 'event_id' => null, 'start_s' => 0, 'end_s' => 0,
+        ]))->assertOk()->assertJsonPath('evidence', [])
+            ->assertJsonPath('source', 'template');
+        Http::assertNothingSent();
+    }
+
+    public function test_ongoing_phase_does_not_expose_its_future_endpoint(): void
+    {
+        $this->fixture('subject_04_evidence.json', [
+            'subjectId' => '04', 'durationS' => 20,
+            'events' => [[
+                'id' => 'open-1', 'timeS' => 7.9, 'kind' => 'valve-open',
+                'label' => 'Estimated inhale',
+                'detail' => 'The virtual valve is open for 2.100 s (7.900–10.000 s).',
+            ]],
+        ]);
+        $this->mockAi(['supported' => true, 'evidence_ids' => ['open-1']]);
+        $response = $this->postJson('/api/ai/replay', $this->payload(['end_s' => 8]))->assertOk();
+        $this->assertStringContainsString('0.1 s so far', $response->json('text'));
+        $this->assertStringNotContainsString('10.000', $response->json('text'));
+        Http::assertSent(fn (Request $request) => ! str_contains($request->body(), '10.000'));
+        $complete = $this->postJson('/api/ai/replay', $this->payload(['end_s' => 10]))->assertOk();
+        $this->assertStringContainsString('2.100 s', $complete->json('text'));
+    }
+
     public function test_public_replay_preserves_private_research_access(): void
     {
         $this->postJson('/api/ai/replay', $this->payload())->assertOk()

@@ -19,6 +19,12 @@ class ReplayAiController extends Controller
         $end = (float) $input['end_s'];
         $eventId = $input['event_id'] ?? null;
         $window = $evidence->window($subject, $view, $start, $end);
+        if ($end === 0.0) {
+            return $this->response(
+                'The replay is at 0 seconds. No playback has elapsed in this session, so there are no played events to summarize. Press Play to begin.',
+                'template', null, [],
+            );
+        }
         $summary = $window['summary'];
         $events = $window['events'];
         $selectedEvent = $eventId === null ? null : ($events[$eventId] ?? null);
@@ -67,7 +73,7 @@ class ReplayAiController extends Controller
     {
         $selection = json_decode($text, true);
         $ids = $selection['evidence_ids'] ?? null;
-        if (!is_array($ids) || !array_is_list($ids) || count($ids) > 5) {
+        if (! is_array($ids) || ! array_is_list($ids) || count($ids) > 5) {
             return null;
         }
         if (($selection['supported'] ?? null) === false && $action === 'ask' && $ids === []) {
@@ -79,12 +85,12 @@ class ReplayAiController extends Controller
 
         $rows = [];
         foreach ($ids as $id) {
-            if (!is_string($id) || !isset($candidates[$id]) || isset($rows[$id])) {
+            if (! is_string($id) || ! isset($candidates[$id]) || isset($rows[$id])) {
                 return null;
             }
             $rows[$id] = $candidates[$id];
         }
-        if ($action === 'explain' && !isset($rows[$eventId])) {
+        if ($action === 'explain' && ! isset($rows[$eventId])) {
             return null;
         }
 

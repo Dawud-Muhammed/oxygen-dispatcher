@@ -103,18 +103,28 @@ export function ReplayAssistant({
     setError("");
     setCopyStatus(undefined);
     try {
-      const response = await askAboutReplay(
-        {
-          subject_id: subjectId,
-          view,
-          action,
-          start_s: startS,
-          end_s: endS,
-          ...(eventId && action === "explain" ? { event_id: eventId } : {}),
-          ...(action === "ask" ? { question: prompt, history } : {}),
-        },
-        task.signal,
-      );
+      const response: ReplayHelpResponse =
+        endS === 0
+          ? {
+              text: "The replay is at 0 seconds. No playback has elapsed in this session, so there are no played events to summarize. Press Play to begin.",
+              source: "template",
+              reason: null,
+              evidence: [],
+            }
+          : await askAboutReplay(
+              {
+                subject_id: subjectId,
+                view,
+                action,
+                start_s: startS,
+                end_s: endS,
+                ...(eventId && action === "explain"
+                  ? { event_id: eventId }
+                  : {}),
+                ...(action === "ask" ? { question: prompt, history } : {}),
+              },
+              task.signal,
+            );
       if (task.current()) {
         const actionsInWindow = reviewActions.filter(
           (item) => item.timeS >= startS && item.timeS <= endS,
@@ -192,7 +202,8 @@ export function ReplayAssistant({
         </div>
       </div>
       <p className="od-ai-scope">
-        Ask about the visible chart. Answers use this replay’s evidence.
+        Answers use recording evidence up to the playback position when you ask.
+        Resetting or seeking clears this conversation.
       </p>
       <div className="od-ai-actions">
         <button disabled={busy || !eventId} onClick={() => void run("explain")}>

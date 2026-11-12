@@ -23,6 +23,7 @@ import type {
 import "./valveReplay.css";
 
 interface AssistantContext {
+  sessionKey: string;
   subjectId: string;
   startS: number;
   endS: number;
@@ -529,10 +530,14 @@ export function ReplayDashboard({
           </section>
           {hasTimeline &&
             renderAssistant?.({
+              sessionKey: replay.sessionKey,
               subjectId: SUBJECT_ID,
               startS: windowStart,
-              endS: windowEnd,
-              eventId: selectedEvent?.id,
+              endS: timeS,
+              eventId:
+                selectedEvent && selectedEvent.timeS <= timeS
+                  ? selectedEvent.id
+                  : undefined,
               seek: inspect,
             })}
         </aside>

@@ -64,7 +64,7 @@ it("shows unknown, open, and closed waveform estimates and passes the exact even
     container.querySelector(".valve-device")?.getAttribute("data-state"),
   ).toBe("open");
   expect(screen.getByTestId("assistant-selection").textContent).toContain(
-    "valve-113 0–12",
+    "valve-113 0–0.904",
   );
   expect(screen.getByText(/rose out of its low band/)).toBeTruthy();
 
@@ -75,6 +75,6 @@ it("shows unknown, open, and closed waveform estimates and passes the exact even
     container.querySelector(".valve-device")?.getAttribute("data-state"),
   ).toBe("closed");
   expect(screen.getByTestId("assistant-selection").textContent).toContain(
-    "valve-199 0–12",
+    "valve-199 0–1.592",
   );
 });

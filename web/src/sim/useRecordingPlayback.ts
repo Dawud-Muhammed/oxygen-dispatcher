@@ -75,6 +75,7 @@ export function useRecordingPlayback({
   const [result, setResult] = useState<RecordingResult | null>(null);
   const [timeS, setTime] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [sessionRevision, setSessionRevision] = useState(0);
   const playhead = useRef(0);
   const isPlaying = useRef(false);
   const startedAt = useRef<number | null>(null);
@@ -95,6 +96,7 @@ export function useRecordingPlayback({
     (targetS: number) => {
       if (!Number.isFinite(targetS)) return;
       pause();
+      setSessionRevision((value) => value + 1);
       playhead.current = Math.max(0, Math.min(targetS, durationS));
       setTime(playhead.current);
     },
@@ -248,6 +250,7 @@ export function useRecordingPlayback({
   const play = () => {
     if (!durationS || !active) return;
     if (playhead.current >= durationS) {
+      setSessionRevision((value) => value + 1);
       playhead.current = 0;
       setTime(0);
     }
@@ -258,6 +261,7 @@ export function useRecordingPlayback({
 
   return {
     recording: current?.recording ?? null,
+    sessionKey: `${subjectId}-${attempt}-${sessionRevision}`,
     evidence: current?.evidence ?? null,
     timeS: current ? timeS : 0,
     playing: playing && !!current,
